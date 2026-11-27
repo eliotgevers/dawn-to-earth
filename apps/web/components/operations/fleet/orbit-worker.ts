@@ -1,4 +1,4 @@
-import { archiveTime, snapshotFile, type CatalogSnapshot, type CatalogIndex } from "@/lib/orbital-catalog";
+import { snapshotFile, type CatalogSnapshot, type CatalogIndex } from "@/lib/orbital-catalog";
 import { prepareElements, estimateCatalog, type OrbitFrame } from "@/lib/orbital-estimates";
 
 export type Scope = { owners: string; selected: number | null };
@@ -9,7 +9,7 @@ async function read(url: string): Promise<CatalogSnapshot> {
   const response = await fetch(url);
   if (!response.ok) throw new Error("Fleet elements unavailable.");
   const snapshot: CatalogSnapshot = await response.json();
-  if (snapshot.group !== "dawn" || !Array.isArray(snapshot.rows) || !Number.isFinite(Date.parse(snapshot.retrievedAt))) throw new Error("Unrecognized fleet data.");
+  if (snapshot.group !== "dawn" || !Array.isArray(snapshot.rows) || !snapshot.rows.length || !Number.isFinite(Date.parse(snapshot.retrievedAt))) throw new Error("Unrecognized fleet data.");
   return snapshot;
 }
 
@@ -17,10 +17,9 @@ self.onmessage = async ({ data }: MessageEvent<{ load: true } | ({ at: number } 
   try {
     if ("load" in data) {
       const data = await read("/api/fleet/catalog").catch(() => read(snapshotFile));
-      const archivedAt = archiveTime(data, Date.now());
       elements = prepareElements(data.rows);
       const rows: CatalogIndex["rows"] = data.rows.map(([id, name, designator, epoch]) => [id, name, designator, epoch]);
-      postMessage({ index: { rows, retrievedAt: data.retrievedAt, archivedAt } } satisfies CatalogEvent);
+      postMessage({ index: { rows, retrievedAt: data.retrievedAt } } satisfies CatalogEvent);
       return;
     }
     const owners = new Set(data.owners.split(",").map(Number));

@@ -1,9 +1,10 @@
 import { cacheLife } from "next/cache";
 import { PHASE_PRODUCTION_BUILD } from "next/constants";
 import seed from "@/db/seed/records.json";
-import bundled from "@/public/fleet/catalog/dawn-snapshot.json";
-import { parseGpCatalog } from "@/lib/orbital-catalog";
+import snapshot from "@/public/fleet/catalog/dawn-snapshot.json";
+import { mergeCatalog, parseGpCatalog, type CatalogSnapshot } from "@/lib/orbital-catalog";
 
+const bundled = snapshot as CatalogSnapshot;
 const sixHours = 6 * 60 * 60;
 const feed = "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=csv";
 const identities = new Map(seed.publicArchive.spacecraft.map(craft => [craft.noradId, craft.internationalDesignator]));
@@ -34,7 +35,7 @@ async function publishedSnapshot() {
 
   cacheLife({ stale: 120, revalidate: sixHours, expire: 31536000 });
   const refreshed = await refresh(Math.floor(Date.now() / (sixHours * 1000)));
-  if (refreshed) return refreshed;
+  if (refreshed) return mergeCatalog(bundled, refreshed);
   if (process.env.NODE_ENV === "development") return bundled;
 
   // Failed ISR revalidation keeps the last successful JSON in Vercel’s durable cache.

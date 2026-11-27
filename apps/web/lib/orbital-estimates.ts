@@ -1,5 +1,5 @@
 import { eciToEcf, gstime, json2satrec, sgp4 } from "satellite.js";
-import { maxElementAge, type OrbitRow } from "./orbital-catalog";
+import type { OrbitRow } from "./orbital-catalog";
 
 const earthRadiusKm = 6378.135; // WGS-72, used by SGP4.
 export const forecastMinutes = 30;
@@ -22,7 +22,6 @@ export type OrbitFrame = { at: number; ids: Int32Array; xyz: Float32Array; path:
 
 function position(element: Element, at: number) {
   const age = at - element.epoch;
-  if (Math.abs(age) > maxElementAge) return;
   const estimate = sgp4(element.record, age / 60000);
   if (!estimate) return;
   const { x, y, z } = eciToEcf(estimate.position, gstime(new Date(at)));

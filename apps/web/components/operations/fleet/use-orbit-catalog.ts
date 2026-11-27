@@ -5,10 +5,10 @@ import type { CatalogEvent, Scope } from "./orbit-worker";
 import type { CatalogIndex } from "@/lib/orbital-catalog";
 import { previewWindow, viewTime, type FleetClock, type OrbitFrame } from "@/lib/orbital-estimates";
 
-function newClock(archived: number | null): FleetClock {
-  const now = Date.now(), at = archived ?? now;
-  return { at, started: now, playing: archived === null && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    speed: 1, end: archived === null ? null : at + previewWindow };
+function newClock(): FleetClock {
+  const now = Date.now();
+  return { at: now, started: now, playing: !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    speed: 1, end: null };
 }
 
 export function useOrbitCatalog(owners: string, selected: number | null) {
@@ -23,7 +23,7 @@ export function useOrbitCatalog(owners: string, selected: number | null) {
     worker.current = instance;
     instance.onmessage = ({ data }: MessageEvent<CatalogEvent>) => {
       if ("frame" in data) setResult(data);
-      else if ("index" in data) { setSnapshot(data.index); setClock(newClock(data.index.archivedAt)); setError(""); }
+      else if ("index" in data) { setSnapshot(data.index); setClock(current => current ?? newClock()); setError(""); }
       else setError(data.error);
     };
     instance.onerror = () => setError("Fleet position estimates unavailable.");
@@ -56,5 +56,5 @@ export function useOrbitCatalog(owners: string, selected: number | null) {
     retry: () => setReload(count => count + 1),
     toggle: () => { if (clock) adjust(clock.speed, !clock.playing); },
     speed: (value: number) => { if (clock && [1, 10, 60].includes(value)) adjust(value, clock.playing); },
-    reset: () => setClock(newClock(snapshot?.archivedAt ?? null)) };
+    reset: () => setClock(newClock()) };
 }

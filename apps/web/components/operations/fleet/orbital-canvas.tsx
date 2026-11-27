@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { SourceLink } from "@/components/records/links";
 import { OrbitalSky } from "./orbital-sky";
 import { useOrbitCatalog } from "./use-orbit-catalog";
-import { maxElementAge, type CatalogEntry } from "@/lib/orbital-catalog";
+import { staleElementAge, type CatalogEntry } from "@/lib/orbital-catalog";
 import type { PublicSpacecraft } from "@/db/schema";
 import { fleetPrograms, type MissionRecord } from "./index-records";
 
@@ -41,7 +41,7 @@ function fleetSelection({ spacecraft, records }: FleetProps, params: URLSearchPa
 
   return {
     cohort, selected, record: selected ? projects.get(selected.projectId) : program,
-    owners: cohort.map(craft => craft.noradId).join(","),
+    owners: cohort.filter(craft => !craft.decayDate).map(craft => craft.noradId).join(","),
     unavailable: (satellite !== null && !selected) || (programId !== null && (!program?.reference || !fleetPrograms.has(program.reference.id))),
     inspecting: satellite !== null || programId !== null,
   };
@@ -119,7 +119,7 @@ export function OrbitalCanvas(props: FleetProps) {
 function FleetTime({catalog}: {catalog: OrbitCatalog}) {
   const at = catalog.frame?.at ?? catalog.clock?.at;
   if (at === undefined) return <div role="status" className="p-1 text-xs">Loading UTC…</div>;
-  const mode = catalog.snapshot?.archivedAt ? "Archive" : catalog.clock?.end ? "Preview" : "";
+  const mode = catalog.clock?.end ? "Preview" : "";
   return <time dateTime={new Date(at).toISOString()} className="rounded bg-background/85 px-2 py-1 text-center font-mono text-foreground tabular-nums" aria-label="Displayed UTC time">
     <span className="block text-[9px] leading-3 sm:text-[10px]">{mode && mode + " · "}{date.format(at)}</span>
     <span className="block text-[11px] font-medium leading-4 sm:text-sm">{time.format(at)} UTC</span>
@@ -131,7 +131,7 @@ function Playback({catalog}: {catalog: OrbitCatalog}) {
   const speed = clock?.speed ?? 1;
   const nextSpeed = speed === 1 ? 10 : speed === 10 ? 60 : 1;
   const end = clock?.end != null && catalog.frame?.at === clock.end;
-  const reset = catalog.snapshot?.archivedAt ? "Return to archive time" : "Return to now";
+  const reset = "Return to now";
   return <div aria-label="Time controls" className="pointer-events-auto flex items-center justify-self-end rounded-md border bg-background/95">
     <Button size="icon-sm" variant="ghost" disabled={!clock || end} onClick={catalog.toggle} title={clock?.playing ? "Pause" : "Play"}
       aria-label={clock?.playing ? "Pause playback" : "Play visualization"}>{clock?.playing ? <Pause/> : <Play/>}</Button>
@@ -176,13 +176,12 @@ function FleetDirectory({ spacecraft, records, snapshot, error, href, projectHre
   const epochs = new Map(snapshot?.rows.map(([id, , , epoch]) => [id, Date.parse(epoch)]));
   const tracked: PublicSpacecraft[] = [], withoutOrbit: PublicSpacecraft[] = [], unclassified: PublicSpacecraft[] = [];
   for (const craft of matches) {
-    const epoch = epochs.get(craft.noradId);
     if (!snapshot && !craft.decayDate) unclassified.push(craft);
-    else if (!craft.decayDate && snapshot?.archivedAt === null && epoch !== undefined && Math.abs(now - epoch) <= maxElementAge) tracked.push(craft);
+    else if (!craft.decayDate && epochs.has(craft.noradId)) tracked.push(craft);
     else withoutOrbit.push(craft);
   }
 
-  function spacecraftLink(craft: PublicSpacecraft, archived = false) {
+  function spacecraftLink(craft: PublicSpacecraft, stale = false) {
     const destination = href(craft.noradId);
     return <li key={craft.noradId}><Link scroll={false} href={destination}
       onNavigate={event => { event.preventDefault(); onChoose(destination); }}
@@ -191,7 +190,7 @@ function FleetDirectory({ spacecraft, records, snapshot, error, href, projectHre
         <span className="block text-sm leading-tight font-medium">{craft.name}</span>
         <span className="block text-[11px] text-muted-foreground">{projects.get(craft.projectId)?.title}</span>
         {craft.decayDate ? <span className="block text-[11px] text-muted-foreground">Reentered {date.format(new Date(craft.decayDate))}</span>
-          : archived && <span className="block text-[11px] text-muted-foreground">Archived elements</span>}
+          : stale && <span className="block text-[11px] text-muted-foreground">Older elements · estimated</span>}
       </span>
       <span className="text-[10px] tabular-nums text-muted-foreground">{craft.noradId}</span>
     </Link></li>;
@@ -206,8 +205,8 @@ function FleetDirectory({ spacecraft, records, snapshot, error, href, projectHre
         <p role="status" className="px-2 py-1 text-xs text-muted-foreground">{error ? "Orbit data unavailable." : "Checking orbit data…"}</p>
         <ul aria-label="Spacecraft awaiting orbit data">{unclassified.map(craft => spacecraftLink(craft))}</ul>
       </>}
-      {!!tracked.length && <DirectoryGroup title="Tracked in orbit">{tracked.map(craft => spacecraftLink(craft))}</DirectoryGroup>}
-      {!!withoutOrbit.length && <DirectoryGroup title="No live orbit">{withoutOrbit.map(craft => spacecraftLink(craft, epochs.has(craft.noradId)))}</DirectoryGroup>}
+      {!!tracked.length && <DirectoryGroup title="Tracked in orbit">{tracked.map(craft => spacecraftLink(craft, now - (epochs.get(craft.noradId) ?? now) > staleElementAge))}</DirectoryGroup>}
+      {!!withoutOrbit.length && <DirectoryGroup title="No current orbit">{withoutOrbit.map(craft => spacecraftLink(craft))}</DirectoryGroup>}
       {!!programs.length && <DirectoryGroup title="Programs">
         {programs.map(record => <li key={record.id}><Link href={projectHref(record.id)} scroll={false} onNavigate={event => { event.preventDefault(); onChoose(projectHref(record.id)); }}
           className="block min-h-9 rounded px-2 py-2 text-sm hover:bg-muted">{record.title}</Link></li>)}
@@ -269,7 +268,7 @@ function SpacecraftEvidence({craft, project, row, catalog}: {
     {craft.orbitNote && <p className="mt-2 text-muted-foreground">{craft.orbitNote}</p>}
     {row && frame && <p className="mt-4 flex items-center gap-2">
       {frame.path.length > 0 && <span aria-hidden className="h-0.5 w-4 bg-amber-500"/>}
-      {catalog.snapshot?.archivedAt && frame.path.length > 0 ? "Estimated path at archive time" : pathCaption(frame, craft.noradId)}
+      {pathCaption(frame, craft.noradId)}
     </p>}
     {sources.size > 0 && <details className="mt-3">
       <summary className="w-fit cursor-pointer py-1 font-medium">Sources</summary>
@@ -286,7 +285,7 @@ function FleetSources({catalog}: {catalog: OrbitCatalog}) {
       <summary className="cursor-pointer">Sources</summary>
       <div className="mt-2 grid gap-1.5">
         <SourceLink href="https://celestrak.org/NORAD/elements/">CelesTrak orbital elements</SourceLink>
-        {catalog.snapshot && <p>Retrieved {utc(catalog.snapshot.retrievedAt)}. Positions use elements within 72 hours of view time.</p>}
+        {catalog.snapshot && <p>Retrieved {utc(catalog.snapshot.retrievedAt)}. Positions are estimates. Older orbital elements can be less accurate.</p>}
         <SourceLink href="https://science.nasa.gov/earth/earth-observatory/blue-marble-next-generation/base-topography-bathymetry/">NASA surface · June 2004</SourceLink>
         <SourceLink href="https://science.nasa.gov/earth/earth-observatory/the-blue-marble-true-color-global-imagery-at-1km-resolution/">NASA clouds · 2002 composite</SourceLink>
       </div>

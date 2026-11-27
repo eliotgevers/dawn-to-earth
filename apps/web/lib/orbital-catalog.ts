@@ -52,18 +52,18 @@ export function parseGpCatalog(raw: string, retrievedAt: string, identities: Rea
   return { source:"CelesTrak", group:"dawn", retrievedAt, rows };
 }
 
-export const maxElementAge = 72 * 60 * 60 * 1000;
-const snapshotMaxAge = 6 * 60 * 60 * 1000;
+export const staleElementAge = 72 * 60 * 60 * 1000;
 
-export function archiveTime(snapshot: CatalogSnapshot, now: number): number | null {
-  const retrieved = Date.parse(snapshot.retrievedAt);
-  const epochs = snapshot.rows.map(row => Date.parse(row[3]));
-  const near = (time: number) => epochs.some(epoch => Math.abs(time - epoch) <= maxElementAge);
-  if (now >= retrieved && now - retrieved <= snapshotMaxAge && near(now)) return null;
-
-  return near(retrieved) || !epochs.length ? retrieved : Math.max(...epochs);
+// A partial refresh must not erase usable elements from the bundled edition.
+export function mergeCatalog(fallback: CatalogSnapshot, refreshed: CatalogSnapshot): CatalogSnapshot {
+  const rows = new Map(fallback.rows.map(row => [row[0], row]));
+  for (const row of refreshed.rows) {
+    const previous = rows.get(row[0]);
+    if (!previous || Date.parse(row[3]) >= Date.parse(previous[3])) rows.set(row[0], row);
+  }
+  return { ...refreshed, rows: [...rows.values()] };
 }
 export const snapshotFile = "/fleet/catalog/dawn-snapshot.json";
 
 export type CatalogEntry = [noradId: number, name: string, designator: string, epoch: string];
-export type CatalogIndex = { rows: CatalogEntry[]; retrievedAt: string; archivedAt: number | null };
+export type CatalogIndex = { rows: CatalogEntry[]; retrievedAt: string };
