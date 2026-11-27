@@ -1,0 +1,26 @@
+services:
+  web:
+    build: {target: production}
+    command: ["bun", "--bun", "next", "start", "-H", "0.0.0.0", "-p", "3000"]
+    ports: !reset []
+    volumes: !override [grants:/grants:ro]
+    restart: unless-stopped
+  postgres:
+    restart: unless-stopped
+  grafana:
+    ports: !reset []
+    restart: unless-stopped
+  influxdb:
+    restart: unless-stopped
+  ingress:
+    image: nginx:1.30.2-alpine
+    restart: unless-stopped
+    ports: ["${INGRESS_BIND:-127.0.0.1}:${HTTPS_PORT}:8443"]
+    depends_on:
+      web: {condition: service_healthy}
+      grafana: {condition: service_healthy}
+    volumes:
+      - ./infra/private-ingress.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${STACK_DIR}/tls.crt:/etc/nginx/tls.crt:ro
+      - ${STACK_DIR}/tls.key:/etc/nginx/tls.key:ro
+      - ${STACK_DIR}/reviewers.htpasswd:/etc/nginx/reviewers.htpasswd:ro

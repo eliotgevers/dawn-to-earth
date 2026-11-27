@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="230" viewBox="0 0 480 230" role="img" aria-labelledby="name desc">
+  <title id="name">B-POINTER-04 · Caption pointer</title>
+  <desc id="desc">The pointer ends at the pale gap between the two swatches.</desc>
+  <rect width="480" height="230" fill="#e5e7dc"/>
+  <g font-family="monospace" font-size="14" fill="#40574d"><text x="18" y="25">B-POINTER-04</text><text x="462" y="25" text-anchor="end">FACE VIEW</text></g>
+  <rect x="51" y="43" width="378" height="131" rx="5" fill="#526562"/>
+  <rect x="62" y="53" width="356" height="110" fill="#e5ddc5"/>
+  <rect x="155" y="72" width="147" height="72" fill="#437d77"/>
+  <rect x="314" y="72" width="77" height="72" fill="#bf8f71"/>
+  <path d="M89 135V102H308" fill="none" stroke="#1e3431" stroke-width="4"/>
+  <circle cx="308" cy="102" r="6" fill="#eab95c" stroke="#1e3431" stroke-width="3"/>
+  <path d="M18 194h444" stroke="#a7b3a6"/>
+  <text x="18" y="214" font-family="sans-serif" font-size="12" fill="#40574d">The pointer ends at the pale gap between the two swatches.</text>
+</svg>

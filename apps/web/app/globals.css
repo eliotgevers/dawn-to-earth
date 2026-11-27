@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: #f7f8fb;
+  --color-foreground: #1c2435;
+  --color-primary: #3d489e;
+  --color-primary-foreground: #fff;
+  --color-secondary: #e9edfb;
+  --color-secondary-foreground: #303b83;
+  --color-muted: #f0f2f7;
+  --color-muted-foreground: #536079;
+  --color-popover: #fff;
+  --color-popover-foreground: #1c2435;
+  --color-accent: #edf1fd;
+  --color-accent-foreground: #303b83;
+  --color-destructive: #a62c29;
+  --color-border: #e1e5ed;
+  --color-input: #cbd2e0;
+  --color-ring: #5363bf;
+}
+
+@layer base {
+  .dark {
+    --color-background: #131821;
+    --color-foreground: #e5eaf4;
+    --color-primary: #afbaff;
+    --color-primary-foreground: #171e42;
+    --color-secondary: #29334e;
+    --color-secondary-foreground: #d3dbff;
+    --color-muted: #222a38;
+    --color-muted-foreground: #abb6cc;
+    --color-popover: #1a202c;
+    --color-popover-foreground: #e5eaf4;
+    --color-accent: #2b354c;
+    --color-accent-foreground: #d3dbff;
+    --color-destructive: #ffaba6;
+    --color-border: #384252;
+    --color-input: #65758c;
+    --color-ring: #afbcff;
+  }
+
+  * { @apply border-border; }
+  body { @apply bg-background text-foreground antialiased; }
+  :where(a, button, input, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 3px;
+  }
+}
+
+@media (width < 761px) {
+  html:has(#workspace-side-panel:not([hidden])) {
+    overflow: hidden;
+  }
+}

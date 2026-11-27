@@ -1,0 +1,13 @@
+**
+!package.json
+!bun.lock
+!apps/
+!apps/web/
+!apps/web/**
+!wiki/
+!wiki/**
+**/node_modules/
+**/.next/
+**/.turbo/
+**/.env*
+**/*.tsbuildinfo

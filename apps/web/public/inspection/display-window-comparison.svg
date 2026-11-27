@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 690" width="100%" height="100%" preserveAspectRatio="xMidYMin meet" role="img" aria-labelledby="title desc">
+  <title id="title">DW-01 · Desktop display window comparison</title>
+  <desc id="desc">Annotated reconstruction of the recorded views of the last display segment. The clear window shows the last segment before and after warming. The warmed smoked window hides it; the warmed bare card shows it lit. Glare from another angle was not checked.</desc>
+  <style>
+    text{font-family:system-ui,-apple-system,sans-serif;fill:#202c34} .k{font-size:13px;font-weight:650;letter-spacing:1px;fill:#4b5f69} .h{font-size:26px;font-weight:650} .s{font-size:18px;font-weight:620} .p{font-size:16px} .muted{fill:#4b5f69} .rule{stroke:#c3cdd0} .face{fill:#e4e9e8;stroke:#596a6d;stroke-width:2} .lit{fill:#187568} .guide{stroke:#667b7d;stroke-width:1.6;fill:none}
+  </style>
+  <rect width="480" height="690" fill="#fbfcfa"/>
+  <text x="22" y="32" class="k">DW-01  /  DESKTOP DISPLAY</text>
+  <text x="22" y="75" class="h">Can the last segment be seen?</text>
+  <text x="22" y="104" class="p muted">Annotated reconstruction of the recorded views.</text>
+  <text x="22" y="130" class="p muted">Each detail shows the same end of the display.</text>
+  <path d="M22 153H458" class="rule"/>
+  <g aria-label="Clear insert. At the start and when warm, the last segment was visible.">
+    <text x="22" y="190" class="s">Clear insert</text>
+    <text x="22" y="215" class="p muted">Starting and warmed views</text>
+    <rect x="24" y="236" width="132" height="56" rx="9" class="face"/>
+    <rect x="44" y="257" width="34" height="12" rx="3" class="lit"/>
+    <rect x="94" y="257" width="34" height="12" rx="3" class="lit"/>
+    <path d="M112 251v-6h38m13 0h14" class="guide"/>
+    <text x="187" y="251" class="p">Last segment visible</text>
+    <text x="187" y="278" class="p muted">in both views.</text>
+  </g>
+  <path d="M22 320H458" class="rule"/>
+  <g aria-label="Smoked insert. In the warmed view, the last segment disappeared.">
+    <text x="22" y="356" class="s">Smoked insert</text>
+    <text x="22" y="381" class="p muted">Warmed view</text>
+    <rect x="24" y="402" width="132" height="56" rx="9" fill="#425052" stroke="#304042" stroke-width="2"/>
+    <rect x="44" y="423" width="34" height="12" rx="3" fill="#b6d0c8"/>
+    <rect x="92" y="420" width="38" height="18" rx="3" fill="none" stroke="#d7dede" stroke-dasharray="3 3"/>
+    <path d="M112 416v-5h65" class="guide"/>
+    <text x="187" y="418" class="p">Last segment hidden.</text>
+    <text x="187" y="445" class="p muted">Outline marks its location.</text>
+  </g>
+  <path d="M22 486H458" class="rule"/>
+  <g aria-label="Bare card. At the same warm stage, the last segment was still lit.">
+    <text x="22" y="522" class="s">Window removed</text>
+    <text x="22" y="547" class="p muted">Bare card at the same warm stage</text>
+    <rect x="24" y="568" width="132" height="56" rx="9" fill="#f7f8f4" stroke="#596a6d" stroke-width="2"/>
+    <rect x="44" y="589" width="34" height="12" rx="3" class="lit"/>
+    <rect x="94" y="589" width="34" height="12" rx="3" class="lit"/>
+    <path d="M112 583v-5h65" class="guide"/>
+    <text x="187" y="585" class="p">Last segment still lit.</text>
+  </g>
+  <text x="22" y="663" class="p muted">Glare at a second viewing angle remains unchecked.</text>
+</svg>

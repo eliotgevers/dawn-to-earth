@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 180">
+  <rect width="480" height="180" rx="6" fill="#eef4fc"/>
+  <circle cx="118" cy="90" r="68" fill="none" stroke="#466f9d" stroke-width="2"/>
+  <circle cx="118" cy="90" r="26" fill="#b7d6e8" stroke="#285070" stroke-width="2"/>
+  <path d="M118 90l53-42" stroke="#285070" stroke-width="2" stroke-dasharray="4 3"/>
+  <circle cx="118" cy="90" r="3.5" fill="#193554"/>
+  <circle cx="171" cy="48" r="6" fill="#193554"/>
+  <path d="M176 44h52m-73 25 25 21h48m-101 17 53 24h48" fill="none" stroke="#557296" stroke-width="1.5"/>
+  <g font-family="system-ui,sans-serif" font-size="18" fill="#183453">
+    <text x="237" y="49">Orbiting body</text>
+    <text x="237" y="95">Radius to center</text>
+    <text x="237" y="136">Central body</text>
+  </g>
+</svg>

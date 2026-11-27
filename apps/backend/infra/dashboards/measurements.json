@@ -1,0 +1,193 @@
+{
+  "uid": "dte-recorded-series",
+  "title": "Recorded bench readings",
+  "description": "Read the registered quantity and unit for one evidence edition. The horizontal axis shows the source register’s own elapsed milliseconds. Each point retains its source row and locator.",
+  "schemaVersion": 39,
+  "version": 3,
+  "timezone": "utc",
+  "editable": false,
+  "refresh": "",
+  "time": {
+    "from": "2025-12-31T23:59:59.999Z",
+    "to": "2026-01-01T23:59:59.999Z"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "edition",
+        "type": "query",
+        "label": "Recording",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "dawn-influxdb"
+        },
+        "query": "import \"strings\"\nfrom(bucket: \"synthetic\")\n  |> range(start: 2026-01-01T00:00:00Z, stop: 2026-01-02T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"evidence_sample\" and r._field == \"elapsed_ms\")\n  |> group(columns: [\"serial\", \"edition\", \"series_id\"])\n  |> first()\n  |> map(fn: (r) => ({_value: r.serial + \" · \" + strings.replaceAll(v: r.series_id, t: \"-\", u: \" \") + \" · \" + strings.substring(v: strings.split(v: r.edition, t: \"~\")[1], start: 0, end: 8) + \"|\" + r.edition}))\n  |> group()\n  |> sort()",
+        "definition": "import \"strings\"\nfrom(bucket: \"synthetic\")\n  |> range(start: 2026-01-01T00:00:00Z, stop: 2026-01-02T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"evidence_sample\" and r._field == \"elapsed_ms\")\n  |> group(columns: [\"serial\", \"edition\", \"series_id\"])\n  |> first()\n  |> map(fn: (r) => ({_value: r.serial + \" · \" + strings.replaceAll(v: r.series_id, t: \"-\", u: \" \") + \" · \" + strings.substring(v: strings.split(v: r.edition, t: \"~\")[1], start: 0, end: 8) + \"|\" + r.edition}))\n  |> group()\n  |> sort()",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 1,
+        "options": [],
+        "current": {},
+        "regex": "/^(?<text>[^|]+)\\|(?<value>.+)$/",
+        "sort": 1
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Readings over time",
+      "description": "Each marker is a registered reading. Repeated clock marks retain separate source rows. Read the quantity and unit in the register below.",
+      "type": "xychart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "dawn-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 10
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "showLegend": true,
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "mapping": "auto",
+        "series": []
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "pointSize": {
+              "fixed": 13
+            },
+            "show": "points",
+            "axisLabel": "Recorded value",
+            "fillOpacity": 100,
+            "pointStrokeWidth": 1,
+            "axisShowBorder": true,
+            "axisGridShow": true
+          },
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#65CBFF"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Elapsed ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Elapsed time"
+              },
+              {
+                "id": "custom.axisSoftMin",
+                "value": -1
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 2
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "dawn-influxdb"
+          },
+          "query": "from(bucket: \"synthetic\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"evidence_sample\" and r.edition =~ /^${edition:regex}$/)\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"elapsed_ms\", \"source_row\"])\n  |> map(fn: (r) => ({\"Elapsed ms\":r.elapsed_ms, row:r.source_row, reading:r.value, label:r.quantity + \" (\" + r.unit + \")\"}))\n  |> pivot(rowKey:[\"Elapsed ms\",\"row\"], columnKey:[\"label\"], valueColumn:\"reading\")\n  |> sort(columns:[\"Elapsed ms\",\"row\"])\n  |> drop(columns:[\"row\"])"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Readings in the selection",
+      "description": "Source interval, observed value and locator within the original worksheet. Elapsed milliseconds come from each recorded reading.",
+      "type": "table",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "dawn-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 11
+      },
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "dawn-influxdb"
+          },
+          "query": "from(bucket: \"synthetic\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"evidence_sample\" and r.edition =~ /^${edition:regex}$/)\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"elapsed_ms\", \"source_row\"])\n  |> keep(columns: [\"elapsed_ms\", \"source_row\", \"value\", \"unit\", \"quantity\", \"locator\", \"source\", \"sample_id\", \"source_id\", \"serial\", \"revision\", \"method\", \"series_id\", \"edition\"])"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "elapsed_ms": 0,
+              "source_row": 1,
+              "value": 2,
+              "unit": 3,
+              "quantity": 4,
+              "locator": 5,
+              "source": 6,
+              "sample_id": 7,
+              "source_id": 8,
+              "serial": 9,
+              "revision": 10,
+              "method": 11,
+              "series_id": 12,
+              "edition": 13
+            },
+            "renameByName": {
+              "elapsed_ms": "Elapsed ms",
+              "source_row": "Source row",
+              "value": "Reading",
+              "unit": "Unit",
+              "quantity": "Quantity",
+              "locator": "Reading locator",
+              "source": "Source",
+              "sample_id": "Reading ID",
+              "source_id": "Evidence",
+              "serial": "Serial",
+              "revision": "Revision",
+              "method": "Method",
+              "series_id": "Series",
+              "edition": "Edition"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

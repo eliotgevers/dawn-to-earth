@@ -1,0 +1,17 @@
+{
+  "name": "dawn-to-earth",
+  "private": true,
+  "packageManager": "bun@1.4.2",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd apps/web dev",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "react-doctor": "0.9.23",
+    "turbo": "2.11.13"
+  }
+}

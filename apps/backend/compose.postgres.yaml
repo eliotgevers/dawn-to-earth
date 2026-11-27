@@ -1,0 +1,14 @@
+# Retained name and volume for the existing host-run web app.
+name: dawn-to-earth-acceptance
+services:
+  postgres:
+    extends: {file: compose.local.yaml, service: postgres}
+    ports: ["127.0.0.1:${DAWN_POSTGRES_PORT:-45432}:5432"]
+    environment:
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in apps/web/.env.local}
+      POSTGRES_PASSWORD_FILE: !reset null
+    secrets: !reset []
+    healthcheck: {interval: 2s, timeout: 2s}
+
+volumes:
+  acceptance-data:

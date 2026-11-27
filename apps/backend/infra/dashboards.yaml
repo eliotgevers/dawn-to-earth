@@ -1,0 +1,11 @@
+apiVersion: 1
+providers:
+  - name: Inspection archives
+    orgId: 1
+    folder: Dawn to Earth
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/dawn-dashboards

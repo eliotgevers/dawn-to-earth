@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 180">
+  <rect width="480" height="180" rx="6" fill="#eef4fc"/>
+  <g stroke="#557296" stroke-width="2" fill="none">
+    <path d="M186 52h107m-8-5 8 5-8 5M379 74v31m-5-8 5 8 5-8M294 128H187m8-5-8 5 8 5"/>
+  </g>
+  <g fill="#fff" stroke="#92a9c5" stroke-width="1.5">
+    <rect x="17" y="30" width="169" height="44" rx="6"/>
+    <rect x="294" y="30" width="169" height="44" rx="6"/>
+    <rect x="294" y="106" width="169" height="44" rx="6"/>
+    <rect x="17" y="106" width="169" height="44" rx="6"/>
+  </g>
+  <g font-family="system-ui,sans-serif" font-size="18" fill="#183453" text-anchor="middle" dominant-baseline="central">
+    <text x="101" y="52">Requirement</text>
+    <text x="378" y="52">As-built record</text>
+    <text x="378" y="128">Evidence</text>
+    <text x="101" y="128">Review decision</text>
+  </g>
+</svg>

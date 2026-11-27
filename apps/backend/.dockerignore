@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!infra/
+!infra/dashboards.yaml
+!infra/influxdb.yaml
+!infra/dashboards/
+!infra/dashboards/*.json

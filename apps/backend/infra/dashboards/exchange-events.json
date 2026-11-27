@@ -1,0 +1,294 @@
+{
+  "uid": "dte-exchange-events",
+  "title": "Electronics exchange log",
+  "description": "Events retain the original elapsed milliseconds. The date anchors the run clock for display. The selected interval is half-open; surrounding points provide context.",
+  "schemaVersion": 39,
+  "version": 4,
+  "timezone": "utc",
+  "editable": false,
+  "refresh": "",
+  "time": {
+    "from": "2025-12-31T23:59:59.999Z",
+    "to": "2026-01-01T00:00:00.100Z"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "edition",
+        "type": "query",
+        "label": "Recording",
+        "datasource": {
+          "type": "influxdb",
+          "uid": "dawn-influxdb"
+        },
+        "query": "import \"strings\"\nfrom(bucket: \"synthetic\")\n  |> range(start: 2026-01-01T00:00:00Z, stop: 2026-01-02T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"exchange_event\" and r._field == \"export_row\")\n  |> group(columns: [\"serial\", \"edition\", \"run_id\"])\n  |> first()\n  |> map(fn: (r) => ({_value: r.serial + \" · \" + strings.replaceAll(v: r.run_id, t: \"-\", u: \" \") + \" · \" + strings.substring(v: strings.split(v: r.edition, t: \"~\")[1], start: 0, end: 8) + \"|\" + r.edition}))\n  |> group()\n  |> sort()",
+        "definition": "import \"strings\"\nfrom(bucket: \"synthetic\")\n  |> range(start: 2026-01-01T00:00:00Z, stop: 2026-01-02T00:00:00Z)\n  |> filter(fn: (r) => r._measurement == \"exchange_event\" and r._field == \"export_row\")\n  |> group(columns: [\"serial\", \"edition\", \"run_id\"])\n  |> first()\n  |> map(fn: (r) => ({_value: r.serial + \" · \" + strings.replaceAll(v: r.run_id, t: \"-\", u: \" \") + \" · \" + strings.substring(v: strings.split(v: r.edition, t: \"~\")[1], start: 0, end: 8) + \"|\" + r.edition}))\n  |> group()\n  |> sort()",
+        "multi": false,
+        "includeAll": false,
+        "refresh": 1,
+        "options": [],
+        "current": {},
+        "regex": "/^(?<text>[^|]+)\\|(?<value>.+)$/",
+        "sort": 1
+      },
+      {
+        "name": "windowStart",
+        "type": "textbox",
+        "label": "Selection start (ms)",
+        "hide": 2,
+        "query": "0",
+        "current": {
+          "text": "0",
+          "value": "0"
+        },
+        "options": []
+      },
+      {
+        "name": "windowStop",
+        "type": "textbox",
+        "label": "Selection end, exclusive (ms)",
+        "hide": 2,
+        "query": "86400000",
+        "current": {
+          "text": "86400000",
+          "value": "86400000"
+        },
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Requests and replies",
+      "description": "Large markers identify selected requests and replies. Smaller gray markers are other events in the visible clock range. Vertical position is the original file row; coincident clocks remain distinct.",
+      "type": "xychart",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "dawn-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 10
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "showLegend": true,
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        },
+        "mapping": "auto",
+        "series": []
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "pointSize": {
+              "fixed": 13
+            },
+            "show": "points",
+            "axisLabel": "File row",
+            "fillOpacity": 100,
+            "pointStrokeWidth": 1,
+            "axisShowBorder": true,
+            "axisGridShow": true,
+            "axisSoftMin": 0,
+            "axisSoftMax": 4
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Elapsed ms"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "custom.axisLabel",
+                "value": "Elapsed time"
+              },
+              {
+                "id": "custom.axisSoftMin",
+                "value": -1
+              },
+              {
+                "id": "custom.axisSoftMax",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Selected request"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#FFB945"
+                }
+              },
+              {
+                "id": "custom.pointSize.fixed",
+                "value": 18
+              },
+              {
+                "id": "custom.pointShape",
+                "value": "circle"
+              },
+              {
+                "id": "displayName",
+                "value": "Selected request"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Selected reply"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#65CBFF"
+                }
+              },
+              {
+                "id": "custom.pointSize.fixed",
+                "value": 18
+              },
+              {
+                "id": "custom.pointShape",
+                "value": "square"
+              },
+              {
+                "id": "displayName",
+                "value": "Selected reply"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Surrounding events"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#9DAABC"
+                }
+              },
+              {
+                "id": "custom.pointSize.fixed",
+                "value": 8
+              },
+              {
+                "id": "custom.pointShape",
+                "value": "circle"
+              },
+              {
+                "id": "displayName",
+                "value": "Surrounding events"
+              }
+            ]
+          }
+        ]
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "dawn-influxdb"
+          },
+          "query": "from(bucket: \"synthetic\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"exchange_event\" and r.edition =~ /^${edition:regex}$/)\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  |> sort(columns: [\"elapsed_ms\", \"export_row\"])\n  |> map(fn: (r) => ({\"Elapsed ms\": r.elapsed_ms, row: r.export_row, position: r.export_row, direction: if r.elapsed_ms >= int(v: \"${windowStart}\") and r.elapsed_ms < int(v: \"${windowStop}\") then (if r.kind == \"request\" then \"Selected request\" else \"Selected reply\") else \"Surrounding events\"}))\n  |> duplicate(column: \"direction\", as: \"series\")\n  |> group(columns: [\"series\"])\n  |> pivot(rowKey: [\"Elapsed ms\", \"row\"], columnKey: [\"direction\"], valueColumn: \"position\")\n  |> drop(columns: [\"row\"])\n  |> sort(columns: [\"Elapsed ms\"])"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Events in the selection",
+      "description": "Only events with elapsed time at or after the start and before the end of the selection. Rows are ordered by elapsed time, then file position.",
+      "type": "table",
+      "datasource": {
+        "type": "influxdb",
+        "uid": "dawn-influxdb"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 24,
+        "h": 11
+      },
+      "options": {
+        "showHeader": true
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "dawn-influxdb"
+          },
+          "query": "from(bucket: \"synthetic\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"exchange_event\" and r.edition =~ /^${edition:regex}$/)\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.elapsed_ms >= int(v: \"${windowStart}\") and r.elapsed_ms < int(v: \"${windowStop}\"))\n  |> group()\n  |> sort(columns: [\"elapsed_ms\", \"export_row\"])\n  |> keep(columns: [\"elapsed_ms\", \"export_row\", \"event_id\", \"kind\", \"correlation\", \"document\", \"entry\", \"source_id\", \"serial\", \"revision\", \"archive_id\", \"run_id\", \"edition\"])"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "elapsed_ms": 0,
+              "export_row": 1,
+              "event_id": 2,
+              "kind": 3,
+              "correlation": 4,
+              "document": 5,
+              "entry": 6,
+              "run_id": 7,
+              "source_id": 8,
+              "serial": 9,
+              "revision": 10,
+              "archive_id": 11,
+              "edition": 12
+            },
+            "renameByName": {
+              "elapsed_ms": "Elapsed ms",
+              "export_row": "File row",
+              "event_id": "Event",
+              "kind": "Kind",
+              "correlation": "Correlation",
+              "document": "Document",
+              "entry": "Entry",
+              "run_id": "Run",
+              "source_id": "Source evidence",
+              "serial": "Serial",
+              "revision": "Revision",
+              "archive_id": "Archive",
+              "edition": "Run edition"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
